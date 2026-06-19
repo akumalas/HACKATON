@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acara Simpanan Saya - Mading Kampus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>body { background-color: #121212; }</style>
+</head>
+<body class="text-gray-300 min-h-screen">
+
+    <nav class="bg-[#1a1a1a] border-b border-gray-800 p-4 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <a href="/" class="text-gray-400 hover:text-white flex items-center transition">
+                <span class="mr-2">←</span> Kembali ke Mading Utama
+            </a>
+            <h1 class="text-white font-semibold text-lg">Acara Simpanan Anda</h1>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-6 w-full mt-6">
+        
+        @if(session('success'))
+            <div class="bg-green-900/50 border border-green-700 text-green-200 px-4 py-3 rounded mb-6 text-sm">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            @forelse($bookmarks as $item)
+                @if($item->event)
+                    <div class="bg-[#1e1e1e] border border-gray-800 rounded-xl overflow-hidden shadow-lg group hover:border-gray-700 transition duration-300 flex flex-col h-full">
+                        
+                        <div class="relative aspect-[3/4] bg-[#252525] overflow-hidden">
+                            <img src="{{ asset('storage/' . $item->event->gambar_poster) }}" alt="{{ $item->event->judul }}" class="w-full h-full object-cover">
+                        </div>
+
+                        <div class="p-5 flex flex-col flex-grow justify-between space-y-4">
+                            <div>
+                                <h3 class="text-lg font-bold text-white line-clamp-1 mb-1">{{ $item->event->judul }}</h3>
+                                <p class="text-xs text-gray-500">📅 {{ \Carbon\Carbon::parse($item->event->tanggal_acara)->format('d M Y') }}</p>
+                            </div>
+
+                            <div class="flex gap-2">
+                                <a href="/event/{{ $item->event->id }}" class="flex-grow bg-gray-800 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-lg text-sm text-center transition">
+                                    Lihat Detail
+                                </a>
+                                
+                                <form action="/event/{{ $item->event->id }}/bookmark" method="POST">
+                                    @csrf
+                                    <button type="submit" class="bg-red-950/40 hover:bg-red-900 border border-red-900 text-red-200 p-2 rounded-lg transition" title="Hapus dari simpanan">
+                                        🗑️
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            @empty
+                <div class="col-span-1 md:col-span-3 text-center py-20 bg-[#1e1e1e] border border-gray-800 rounded-xl">
+                    <p class="text-gray-500 italic mb-4">Belum ada acara yang Anda simpan.</p>
+                    <a href="/" class="inline-block bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded-lg text-sm transition">
+                        Jelajahi Mading
+                    </a>
+                </div>
+            @endforelse
+        </div>
+    </main>
+
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ $event->judul }} - Mading Kampus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #121212;
+        }
+    </style>
+</head>
+
+<body class="text-gray-300 min-h-screen">
+
+    <nav class="bg-[#1a1a1a] border-b border-gray-800 p-4 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <a href="/" class="text-gray-400 hover:text-white flex items-center transition">
+                <span class="mr-2">←</span> Kembali ke Beranda
+            </a>
+        </div>
+    </nav>
+
+    <main class="max-w-6xl mx-auto p-6 w-full mt-4">
+
+        @if(session('success'))
+            <div class="bg-green-900/50 border border-green-700 text-green-200 px-4 py-3 rounded mb-6 text-sm">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        <div class="flex flex-col md:flex-row gap-8">
+
+            <div class="w-full md:w-1/3">
+                <div class="bg-[#1e1e1e] border border-gray-800 rounded-xl overflow-hidden shadow-2xl sticky top-24">
+                    <img src="{{ asset('storage/' . $event->gambar_poster) }}" alt="{{ $event->judul }}"
+                        class="w-full h-auto object-cover">
+                </div>
+            </div>
+
+            <div class="w-full md:w-2/3 space-y-8">
+
+                <div class="bg-[#1e1e1e] border border-gray-800 rounded-xl p-8 shadow-lg">
+                    <div class="flex justify-between items-start mb-4">
+                        <h1 class="text-3xl font-bold text-white leading-tight">{{ $event->judul }}</h1>
+
+                        @auth
+                            <form action="/event/{{ $event->id }}/bookmark" method="POST">
+                                @csrf
+                                <button type="submit"
+                                    class="p-2 rounded-full border {{ $isBookmarked ? 'bg-white text-black border-white' : 'border-gray-600 text-gray-400 hover:text-white hover:border-white' }} transition">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6"
+                                        fill="{{ $isBookmarked ? 'currentColor' : 'none' }}" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                                    </svg>
+                                </button>
+                            </form>
+                        @endauth
+                    </div>
+
+                    <div class="flex items-center space-x-6 text-sm text-gray-400 mb-6 border-b border-gray-800 pb-6">
+                        <span class="flex items-center">
+                            📅 {{ \Carbon\Carbon::parse($event->tanggal_acara)->format('d M Y') }}
+                        </span>
+                        <span
+                            class="flex items-center font-semibold {{ $event->harga == 0 ? 'text-green-400' : 'text-blue-400' }}">
+                            🎟️ {{ $event->harga == 0 ? 'GRATIS' : 'Rp ' . number_format($event->harga, 0, ',', '.') }}
+                        </span>
+                    </div>
+
+                    <div class="prose prose-invert max-w-none text-gray-300 leading-relaxed whitespace-pre-line mb-8">
+                        {{ $event->deskripsi }}
+                    </div>
+
+                    @auth
+                        <a href="{{ $event->link_action ?? '#' }}" target="_blank"
+                            class="block w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-lg transition duration-200 text-center shadow-lg shadow-blue-900/20">
+                            {{ $event->harga == 0 ? 'Daftar Sekarang (Gratis)' : 'Hubungi Panitia / Daftar' }}
+                        </a>
+                    @else
+                        <a href="/login"
+                            class="block w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-lg transition duration-200 text-center">
+                            Login untuk Mendaftar Acara
+                        </a>
+                    @endauth
+                </div>
+
+                <div class="bg-[#1e1e1e] border border-gray-800 rounded-xl p-8 shadow-lg">
+                    <h3 class="text-xl font-bold text-white mb-6">Diskusi Acara ({{ $event->comments->count() }})</h3>
+
+                    @auth
+                        <form action="/event/{{ $event->id }}/comment" method="POST" class="mb-8">
+                            @csrf
+                            <textarea name="isi_komentar" rows="3" required
+                                placeholder="Tulis pertanyaan atau komentar Anda di sini..."
+                                class="w-full bg-[#2a2a2a] text-white border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-gray-500 mb-3"></textarea>
+                            <button type="submit"
+                                class="bg-gray-200 hover:bg-white text-gray-900 font-semibold py-2 px-6 rounded-lg transition text-sm">Kirim
+                                Komentar</button>
+                        </form>
+                    @else
+                        <p class="text-sm text-gray-500 mb-8 border-b border-gray-800 pb-4">Silakan <a href="/login"
+                                class="text-white hover:underline">login</a> untuk memberikan komentar.</p>
+                    @endauth
+
+                    <div class="space-y-5">
+                        @forelse($event->comments as $comment)
+                            <div class="bg-[#2a2a2a] p-4 rounded-lg border border-gray-700/50">
+                                <div class="flex justify-between items-start mb-2">
+                                    <span
+                                        class="font-semibold text-gray-200 text-sm">{{ $comment->user->nama_lengkap }}</span>
+                                    <span class="text-xs text-gray-500">{{ $comment->created_at->diffForHumans() }}</span>
+                                </div>
+                                <p class="text-gray-400 text-sm leading-relaxed">{{ $comment->isi_komentar }}</p>
+                            </div>
+                        @empty
+                            <p class="text-gray-500 text-sm italic">Belum ada diskusi. Jadilah yang pertama berkomentar!</p>
+                        @endforelse
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+</body>
+
+</html>
